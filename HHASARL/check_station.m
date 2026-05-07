@@ -1,11 +1,12 @@
 function newstation=check_station(rutamodif,model)
+    EvalCounter('add_partial', 1);
     newstation=[];
     energy_temp = model.ENERGY; 
     len=length(rutamodif);
     for i=1:len-1
         from=rutamodif(i);
         to=rutamodif(i+1);
-        energy=model.CONSUMPTION*model.d(from+1,to+1);
+        energy=model.CONSUMPTION*GetDistance(model,from+1,to+1);
      	energy_temp=energy_temp-energy;
         if energy_temp < 0
             if from~=0 || from<model.SIZE
@@ -18,4 +19,3 @@ function newstation=check_station(rutamodif,model)
         end
     end
 end
-

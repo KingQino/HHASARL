@@ -1,4 +1,5 @@
 function [rutaP,rutaR,rutaC]=RemoveExcessCeros(rutaP,rutaR,rutaC)
+    EvalCounter('add_partial', 1);
     vec1=[];
     vec2=[];
     for i=1:length(rutaP)-1

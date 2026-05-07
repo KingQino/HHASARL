@@ -1,4 +1,5 @@
 function [rutaP,rutaR]=RemoveExcessStations(rutaP,rutaR)
+  	EvalCounter('add_partial', 1);
   	vec=[];
    	for i=1:length(rutaP)-2
         if rutaP(i)==0 && rutaP(i+1)==-1 && rutaP(i+2)==0

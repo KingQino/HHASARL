@@ -1,4 +1,4 @@
-function [BestSol,minCost,flagggg,MemoryHeuristicsSu,MemoryHeuristicsSe]=EVRPSARL(model,RL, print, draw)
+function [BestSol,minCost,flagggg,MemoryHeuristicsSu,MemoryHeuristicsSe,Evolution]=EVRPSARL(model,RL, print, draw)
 
 % RL:
 % 0 Rand
@@ -14,7 +14,6 @@ T = T0;
 
 %% MAB Parameters
 iter=model.SIZE*40;
-it=0;
 nbandits=8; % Number of heuristics
 % Reset probabilities of actions
 Suc=zeros(1,nbandits);
@@ -22,6 +21,14 @@ Fail=zeros(1,nbandits);
 theta=zeros(1,nbandits);
 Selected=zeros(1,nbandits);
 costArray=zeros(1,1000);
+bestCostHistory=zeros(1,1000);
+evalHistory=zeros(1,1000);
+timeHistory=zeros(1,1000);
+runTimer=tic;
+MemoryHeuristicsSu={};
+MemoryHeuristicsSe={};
+Evolution=struct('obj',[],'evals',[],'time',[]);
+EvalCounter('init', model.ACTUAL_PROBLEM_SIZE);
 
 if draw == 1
     set(gcf,'unit','normalized','position',[0,0.2,0.8,0.7]);
@@ -51,6 +58,8 @@ sol.Position=AddDeposit(sol.Position,model);
 
 [sol.Route,sol.CRoute]=AddStation(sol.Position,model);
 sol.Length=inf;
+sol.cost=[];
+sol.mincost=[];
 BestSol=sol;
 cnt = 1;
 minCost = sol.Length;
@@ -60,7 +69,8 @@ enfriar=0;
 permuta=0;
 while(T > Ts)
     % Evaluate function accesses
-    if it>=model.MaxIter
+    currentEvals = EvalCounter('get');
+    if currentEvals>=model.MaxIter
         if draw == 1
             [temp,map] = rgb2ind(im{1},65536);
             jjend=jj-1;
@@ -70,14 +80,15 @@ while(T > Ts)
             imwrite(gifim,map,'E22.gif')
         end
         flagggg=1;
-        MemoryHeuristicsSe=num2cell(MemorySe);
-        MemoryHeuristicsSu=num2cell(MemorySu);
         break; 
     end
     
     % Multi-Armed Bandit (MAB)
     % Selection of heuristics
     for k=1:iter
+        if EvalCounter('get')>=model.MaxIter
+            break;
+        end
         switch RL
             case 0
                 action=round((nbandits-1)*rand +1);
@@ -106,6 +117,12 @@ while(T > Ts)
       	go=1;
         flagg=1;
         while flagg==1
+            if EvalCounter('get')>=model.MaxIter
+                go=0;
+                flagg=0;
+                break;
+            end
+            newsol = sol;
             if ~isempty(permuta)
                 permuta=randperm(model.n);
             end
@@ -136,9 +153,10 @@ while(T > Ts)
         end
         [newsol.Route,newsol.CRoute]=RemoveExcess(newsol.Route,newsol.CRoute);
         
-        if go==1
-            bb=m3*(it/model.MaxIter*100)+b3;        	
-            [newsol.Route,newsol.CRoute,newsol.Length,it]=Rutas(newsol.Route,newsol.CRoute,model,it,bb);
+        if go==1 && EvalCounter('get')<model.MaxIter
+            currentEvals = EvalCounter('get');
+            bb=m3*(currentEvals/model.MaxIter*100)+b3;        	
+            [newsol.Route,newsol.CRoute,newsol.Length]=Rutas(newsol.Route,newsol.CRoute,model,bb);
             newsol.Position=newsol.Route(newsol.Route>=0);
             [newsol.Route,newsol.CRoute]=RemoveExcessStations(newsol.Route,newsol.CRoute);
       
@@ -177,18 +195,23 @@ while(T > Ts)
             T = T*r; %  annealing
     else
        	enfriar=0;
-        if T<300000 && it<=0.9*model.MaxIter
-            c=m*(it/model.MaxIter*100)+b;
+        currentEvals = EvalCounter('get');
+        if T<300000 && currentEvals<=0.9*model.MaxIter
+            c=m*(currentEvals/model.MaxIter*100)+b;
             T = T+c;
         end
     end
     
     if print == 1
-        disp([' Iteration ' num2str(cnt) ': BestCost = ' num2str(minCost) ': CurrentCost = ' num2str(sol.Length) ' T = ' num2str(T) ': Percentage = ' num2str(it/model.MaxIter*100)]);
+        currentEvals = EvalCounter('get');
+        disp([' Iteration ' num2str(cnt) ': BestCost = ' num2str(minCost) ': CurrentCost = ' num2str(sol.Length) ' T = ' num2str(T) ': Percentage = ' num2str(currentEvals/model.MaxIter*100)]);
     end
-    cnt = cnt+1;
+    bestCostHistory(cnt)=minCost;
+    evalHistory(cnt)=EvalCounter('get');
+    timeHistory(cnt)=toc(runTimer);
    	BestSol.cost=costArray;
     BestSol.mincost=Costmin;
+    cnt = cnt+1;
     
     if draw == 1
         figure(1);
@@ -199,4 +222,24 @@ while(T > Ts)
         [im{jj},map]=frame2im(getframe(figure(1)));
         jj = jj+1;
     end
+end
+
+historyLength = cnt-1;
+currentEvals = EvalCounter('get');
+if historyLength < 1 || evalHistory(historyLength) ~= currentEvals
+    historyLength = historyLength + 1;
+    bestCostHistory(historyLength)=minCost;
+    evalHistory(historyLength)=currentEvals;
+    timeHistory(historyLength)=toc(runTimer);
+end
+
+Evolution.obj = bestCostHistory(1:historyLength);
+Evolution.evals = evalHistory(1:historyLength);
+Evolution.time = timeHistory(1:historyLength);
+
+if exist('MemorySu','var')
+    MemoryHeuristicsSu=num2cell(MemorySu);
+end
+if exist('MemorySe','var')
+    MemoryHeuristicsSe=num2cell(MemorySe);
 end

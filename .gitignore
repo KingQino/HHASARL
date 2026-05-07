@@ -1,0 +1,47 @@
+/.idea/
+/cmake-build-debug/
+/cmake-build-release/
+/cmake-build-debug-llvm/
+/cmake-build-default-llvm/
+.DS_Store
+stats
+experiments
+external/googletest/
+/build-debug/
+/build/
+HHASARL/.DS_Store
+HHASARL/EVRP/.DS_Store
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+

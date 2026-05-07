@@ -1,9 +1,10 @@
 function [Cq,q,permuta]=Actions(Cruta,ruta,action,model,permuta)
+        EvalCounter('add_partial', 1);
         if action<=4
             a=permuta(1);
             permuta(1)=[];
             porce=round(model.n*0.20);
-            A=model.d(a+1,2:model.SIZE);
+            A=GetDistance(model,a+1,2:model.SIZE);
             [~,indx]=sort(A);
             val=indx(2:porce+1);
             a=sort([a val(round(rand()*(length(val)-1))+1)]);
@@ -11,7 +12,7 @@ function [Cq,q,permuta]=Actions(Cruta,ruta,action,model,permuta)
             a=permuta(1);
             permuta(1)=[];
             porce=round(model.n*0.50);
-            A=model.d(a+1,2:model.SIZE);
+            A=GetDistance(model,a+1,2:model.SIZE);
             [~,indx]=sort(A);
             val=indx(2:porce+1);
             a=sort([a val(round(rand()*(length(val)-1))+1)]);

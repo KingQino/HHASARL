@@ -1,7 +1,9 @@
-function [station,vv]=nearstation(stations,from,to,distances,problem_size)
+function [station,vv]=nearstation(stations,from,to,model)
+    EvalCounter('add_partial', 1);
+    problem_size=model.SIZE;
     stations2=stations;
     for i=1:length(stations)
-        stations(i)=distances(to,i+problem_size);%to
+        stations(i)=GetDistance(model,to,i+problem_size);%to
     end
     [vv]=min(stations);
     ind=find(stations==vv);
@@ -9,7 +11,7 @@ function [station,vv]=nearstation(stations,from,to,distances,problem_size)
         station=ind; 
     else
         for i=1:length(stations)
-            stations2(i)=distances(from,i+problem_size);%from
+            stations2(i)=GetDistance(model,from,i+problem_size);%from
         end
         if stations2(ind(1))<stations2(ind(2))
             station=ind(1);

@@ -1,4 +1,5 @@
-function [AdjRoute,AdjCRoute,RouteFitness,it]=Rutas(route,Croute,model,it,bb)
+function [AdjRoute,AdjCRoute,RouteFitness]=Rutas(route,Croute,model,bb)
+    EvalCounter('add_partial', 1);
     P(1)=0.0;   % Probabilidad Insertar
     P(2)=0.6;   % Probabilidad Mover
     P(3)=0.4;   % Probabilidad Eliminar
@@ -23,8 +24,9 @@ function [AdjRoute,AdjCRoute,RouteFitness,it]=Rutas(route,Croute,model,it,bb)
                         while acc==1
                             n=vep(cont);
                             if temp(n+1)~=-1 && temp(n)~=-1
+                                EvalCounter('add_partial', 1);
                                 temp=[temp(1:n) -1 temp(n+1:end)];
-                                station=nearstation(zeros(model.STATIONS,1),Ctemp(n)+1,Ctemp(n+1)+1,model.d,model.SIZE);
+                                station=nearstation(zeros(model.STATIONS,1),Ctemp(n)+1,Ctemp(n+1)+1,model);
                                 Ctemp=[Ctemp(1:n) station+model.SIZE-1 Ctemp(n+1:end)];
                                 acc=0;
                             else
@@ -52,8 +54,9 @@ function [AdjRoute,AdjCRoute,RouteFitness,it]=Rutas(route,Croute,model,it,bb)
                                 while acc2==1
                                     n=vep2(cont);
                                     if t(n+1)~=-1 && t(n)~=-1 && n~=x(a)-1
+                                        EvalCounter('add_partial', 1);
                                         t=[t(1:n) -1 t(n+1:end)];
-                                        station=nearstation(zeros(model.STATIONS,1),Ct(n)+1,Ct(n+1)+1,model.d,model.SIZE);
+                                        station=nearstation(zeros(model.STATIONS,1),Ct(n)+1,Ct(n+1)+1,model);
                                         Ct=[Ct(1:n) station+model.SIZE-1 Ct(n+1:end)];
                                         acc2=0;
                                     else
@@ -91,8 +94,9 @@ function [AdjRoute,AdjCRoute,RouteFitness,it]=Rutas(route,Croute,model,it,bb)
             for j=1:length(estaciones)
                 n=estaciones(j)+cont-1;
               	if temp(n+1)~=-1 && temp(n)~=-1
+                    EvalCounter('add_partial', 1);
                     temp=[temp(1:n) -1 temp(n+1:end)];
-                    station=nearstation(zeros(model.STATIONS,1),Ctemp(n)+1,Ctemp(n+1)+1,model.d,model.SIZE);
+                    station=nearstation(zeros(model.STATIONS,1),Ctemp(n)+1,Ctemp(n+1)+1,model);
                     Ctemp=[Ctemp(1:n) station+model.SIZE-1 Ctemp(n+1:end)];
                     cont=cont+1;
                 else
@@ -103,6 +107,5 @@ function [AdjRoute,AdjCRoute,RouteFitness,it]=Rutas(route,Croute,model,it,bb)
       	AdjRoute=[AdjRoute temp(2:end)];
         AdjCRoute=[AdjCRoute Ctemp(2:end)];
     end
-	RouteFitness=fitness_evaluation(AdjCRoute,model.d);
-    it=it+1;
+	RouteFitness=fitness_evaluation(AdjCRoute,model);
 end

@@ -1,4 +1,5 @@
 function [flag1,vect,carga]=Check(ruta,model)
+    EvalCounter('add_partial', 1);
     MAX_CAPACITY=model.CAPACITY;
     cust_demand=model.DEMAND;
    	capacity_temp = 0;

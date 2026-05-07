@@ -1,4 +1,5 @@
 function [newrutaP,newrutaC,newrutaR,flag1,limit,carga,trash]=RepairCharge(rutaP,rutaC,rutaR,limit,carga,model)
+    EvalCounter('add_partial', 1);
     trash=0;
     i=1;
     z=find(rutaP==0);
@@ -13,7 +14,7 @@ function [newrutaP,newrutaC,newrutaR,flag1,limit,carga,trash]=RepairCharge(rutaP
         end
     end    
     if ~isempty(repair)
-        A=model.d(client+1,vec+1);
+        A=GetDistance(model,client+1,vec+1);
         [~,pos]=min(A);
         %Eliminar el cliente
         rutaP(limit(i))=[];
