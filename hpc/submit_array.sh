@@ -18,7 +18,7 @@ array_max=$((instance_count - 1))
 mkdir -p "$log_dir"
 
 sbatch \
-    --array="0-$array_max%4" \
+    --array="0-$array_max%8" \
     --job-name="$job_name" \
     --output="$log_dir/%x-%A_%a.out" \
     --chdir="$build_dir" \
