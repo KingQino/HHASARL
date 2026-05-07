@@ -5,11 +5,14 @@ This is a MATLAB project for solving Electric Vehicle Routing Problem instances 
 ## Source
 
 ```bibtex
-@article{rodriguez2022new,
+@article{rodriguez2024new,
   title={A new hyper-heuristic based on adaptive simulated annealing and reinforcement learning for the capacitated electric vehicle routing problem},
   author={Rodr{\'\i}guez-Esparza, Erick and Masegosa, Antonio D and Oliva, Diego and Onieva, Enrique},
-  journal={arXiv preprint arXiv:2206.03185},
-  year={2022}
+  journal={Expert Systems with Applications},
+  volume={252},
+  pages={124197},
+  year={2024},
+  publisher={Elsevier}
 }
 ```
 
