@@ -11,6 +11,7 @@
 set -euo pipefail
 
 # Adjust this line to match your cluster environment.
+module purge
 module load matlab/2024a
 
 # Avoid nested BLAS/OpenMP threading when parfor workers are already used.
