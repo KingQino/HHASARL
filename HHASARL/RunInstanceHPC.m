@@ -41,6 +41,21 @@ function RunInstanceHPC(arrayTaskId, numWorkers)
     instanceFile = instanceNames{instanceIndex};
     instancePath = fullfile(collectionDirectory, instanceFile);
     fprintf('Task %d selected %s\n', arrayTaskId, instanceFile);
+    % ===== HPC parallel control =====
+    maxNumCompThreads(1);  % avoid implicit multithreading
+    
+    pool = gcp('nocreate');
+    if isempty(pool)
+        fprintf('Starting parallel pool with %d workers...\n', numWorkers);
+        parpool(numWorkers);
+    else
+        if pool.NumWorkers ~= numWorkers
+            delete(pool);
+            fprintf('Restarting parallel pool with %d workers...\n', numWorkers);
+            parpool(numWorkers);
+        end
+    end
+    % =================================
     RunInstanceExperiment(instancePath, RL, printFlag, drawFlag, ...
         maxTrials, numWorkers, statsRoot, algorithmName);
 end
