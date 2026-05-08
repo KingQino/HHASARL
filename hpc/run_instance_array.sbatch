@@ -14,11 +14,15 @@ set -euo pipefail
 module purge
 module load matlab/2024a
 
+export MATLAB_PREFDIR=/tmp/$USER/matlab_$SLURM_JOB_ID
+mkdir -p $MATLAB_PREFDIR
+
 # Avoid nested BLAS/OpenMP threading when parfor workers are already used.
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export MATLAB_USE_DISPLAY=0
+export MATLAB_DISABLE_SERVICEHOST=1
 
 export HHASARL_COLLECTION_DIR="${HHASARL_COLLECTION_DIR:-EVRP/evrp-benchmark-set/Complete}"
 export HHASARL_STATS_ROOT="${HHASARL_STATS_ROOT:-stats}"
