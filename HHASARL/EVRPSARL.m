@@ -20,10 +20,11 @@ Suc=zeros(1,nbandits);
 Fail=zeros(1,nbandits);
 theta=zeros(1,nbandits);
 Selected=zeros(1,nbandits);
-costArray=zeros(1,1000);
-bestCostHistory=zeros(1,1000);
-evalHistory=zeros(1,1000);
-timeHistory=zeros(1,1000);
+historyCapacity=1024;
+costArray=zeros(1,historyCapacity);
+bestCostHistory=zeros(1,historyCapacity);
+evalHistory=zeros(1,historyCapacity);
+timeHistory=zeros(1,historyCapacity);
 runTimer=tic;
 MemoryHeuristicsSu={};
 MemoryHeuristicsSe={};
@@ -174,6 +175,11 @@ while(T > Ts)
         end
     end
     
+    if cnt > numel(costArray)
+        [costArray,bestCostHistory,evalHistory,timeHistory] = GrowHistoryArrays( ...
+            costArray,bestCostHistory,evalHistory,timeHistory);
+    end
+
 	%Reset probabilities of actions
     MemorySu(cnt,:) = Suc;
 	MemorySe(cnt,:) = Selected;
@@ -242,4 +248,15 @@ if exist('MemorySu','var')
 end
 if exist('MemorySe','var')
     MemoryHeuristicsSe=num2cell(MemorySe);
+end
+end
+
+
+function [costArray,bestCostHistory,evalHistory,timeHistory] = GrowHistoryArrays( ...
+    costArray,bestCostHistory,evalHistory,timeHistory)
+    newCapacity = max(2*numel(costArray), 1);
+    costArray(1,newCapacity) = 0;
+    bestCostHistory(1,newCapacity) = 0;
+    evalHistory(1,newCapacity) = 0;
+    timeHistory(1,newCapacity) = 0;
 end

@@ -6,27 +6,36 @@ function [Cq,q,permuta]=Actions(Cruta,ruta,action,model,permuta)
             porce=round(model.n*0.20);
             A=GetDistance(model,a+1,2:model.SIZE);
             [~,indx]=sort(A);
-            val=indx(2:porce+1);
-            a=sort([a val(round(rand()*(length(val)-1))+1)]);
+            val=indx(2:min(porce+1,length(indx)));
+            a=BuildDistinctPair(a,val,model.n);
         elseif action>=5 && action<=8
             a=permuta(1);
             permuta(1)=[];
             porce=round(model.n*0.50);
             A=GetDistance(model,a+1,2:model.SIZE);
             [~,indx]=sort(A);
-            val=indx(2:porce+1);
-            a=sort([a val(round(rand()*(length(val)-1))+1)]);
+            val=indx(2:min(porce+1,length(indx)));
+            a=BuildDistinctPair(a,val,model.n);
         else
             a=permuta(1);
             permuta(1)=[];
             temp=ruta(ruta>0);
             temp(find(temp==a))=[];
-        	a=sort([a temp(round(rand()*(length(temp)-1))+1)]);
+            if isempty(temp)
+                a=a;
+            else
+        	    a=sort([a temp(round(rand()*(length(temp)-1))+1)]);
+            end
         end
    	c=ismember(ruta,a);
 	indexes=find(c);
  	Cc=ismember(Cruta,a);
 	Cindexes=find(Cc);
+    if numel(indexes)<2 || numel(Cindexes)<2
+        q=ruta;
+        Cq=Cruta;
+        return;
+    end
     switch action      
         %IntraRoute Modificar la Cadena
         case 1  % Swap
@@ -86,4 +95,23 @@ function [Cq,q,permuta]=Actions(Cruta,ruta,action,model,permuta)
             end
             [q,Cq]=DoDR(ruta,Cruta,u,0,model);
     end
+end
+
+
+function pair = BuildDistinctPair(anchor,candidates,numCustomers)
+    candidates = candidates(:)';
+    candidates = candidates(candidates ~= anchor);
+
+    if isempty(candidates)
+        fallback = setdiff(1:numCustomers, anchor, 'stable');
+        if isempty(fallback)
+            pair = anchor;
+        else
+            pair = sort([anchor fallback(1)]);
+        end
+        return;
+    end
+
+    partner = candidates(randi(numel(candidates)));
+    pair = sort([anchor partner]);
 end

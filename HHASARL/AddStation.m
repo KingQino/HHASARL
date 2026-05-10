@@ -5,22 +5,17 @@ rutaC=ruta;
 cont=1;
 for j=1:length(estaciones)
     n=estaciones(j)+cont-1;
-    if n~=length(ruta)
-        if ruta(n+1)~=-1 && ruta(n)~=-1
-            EvalCounter('add_partial', 1);
-            ruta=[ruta(1:n) -1 ruta(n+1:end)];
-         	station=nearstation(zeros(model.STATIONS,1),rutaC(n)+1,rutaC(n+1)+1,model);
-          	rutaC=[rutaC(1:n) station+model.SIZE-1 rutaC(n+1:end)];
-          	cont=cont+1;
-        end
-    else
-      	if ruta(n)~=-1
-            EvalCounter('add_partial', 1);
-            ruta=[ruta(1:n) -1 ruta(n+1:end)];
-         	station=nearstation(zeros(model.STATIONS,1),rutaC(n)+1,rutaC(n+1)+1,model);
-            rutaC=[rutaC(1:n) station+model.SIZE-1 rutaC(n+1:end)];
-        	cont=cont+1;
-        end
+    if n < 1 || n >= length(ruta) || n >= length(rutaC)
+        continue;
     end
+    if ruta(n)==-1 || ruta(n+1)==-1
+        continue;
+    end
+
+    EvalCounter('add_partial', 1);
+    station=nearstation(zeros(model.STATIONS,1),rutaC(n)+1,rutaC(n+1)+1,model);
+    ruta=[ruta(1:n) -1 ruta(n+1:end)];
+    rutaC=[rutaC(1:n) station+model.SIZE-1 rutaC(n+1:end)];
+    cont=cont+1;
 end
 end

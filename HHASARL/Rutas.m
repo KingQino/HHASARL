@@ -17,23 +17,23 @@ function [AdjRoute,AdjCRoute,RouteFitness]=Rutas(route,Croute,model,bb)
                 ii=RouletteWheelSelection(P);
                 switch ii
                     case 1
-                        acc=1;
-                        cont=1;
                         sze=length(temp)-1;
-                    	vep=randperm(sze);
-                        while acc==1
+                        if sze >= 1
+                            vep=randperm(sze);
+                        else
+                            vep=[];
+                        end
+                        for cont=1:numel(vep)
                             n=vep(cont);
+                            if n < 1 || n >= length(temp)
+                                continue;
+                            end
                             if temp(n+1)~=-1 && temp(n)~=-1
                                 EvalCounter('add_partial', 1);
                                 temp=[temp(1:n) -1 temp(n+1:end)];
                                 station=nearstation(zeros(model.STATIONS,1),Ctemp(n)+1,Ctemp(n+1)+1,model);
                                 Ctemp=[Ctemp(1:n) station+model.SIZE-1 Ctemp(n+1:end)];
-                                acc=0;
-                            else
-                                cont=cont+1;
-                            end
-                            if cont==length(vep)
-                                acc=0;
+                                break;
                             end
                         end
                     case 2 
@@ -48,22 +48,22 @@ function [AdjRoute,AdjCRoute,RouteFitness]=Rutas(route,Croute,model,bb)
                                	t(x(a))=[];
                                 Ct(x(a))=[];
                                 sz=length(t)-1;
-                              	vep2=randperm(sz);
-                                acc2=1;
-                                cont=1;
-                                while acc2==1
+                                if sz >= 1
+                                    vep2=randperm(sz);
+                                else
+                                    vep2=[];
+                                end
+                                for cont=1:numel(vep2)
                                     n=vep2(cont);
+                                    if n < 1 || n >= length(t)
+                                        continue;
+                                    end
                                     if t(n+1)~=-1 && t(n)~=-1 && n~=x(a)-1
                                         EvalCounter('add_partial', 1);
                                         t=[t(1:n) -1 t(n+1:end)];
                                         station=nearstation(zeros(model.STATIONS,1),Ct(n)+1,Ct(n+1)+1,model);
                                         Ct=[Ct(1:n) station+model.SIZE-1 Ct(n+1:end)];
-                                        acc2=0;
-                                    else
-                                        cont=cont+1;
-                                    end
-                                    if cont==length(vep)+1
-                                        acc2=0;
+                                        break;
                                     end
                                 end
                                 flag=check_station(Ct,model);
@@ -93,6 +93,9 @@ function [AdjRoute,AdjCRoute,RouteFitness]=Rutas(route,Croute,model,bb)
          	cont=1;
             for j=1:length(estaciones)
                 n=estaciones(j)+cont-1;
+                if n < 1 || n >= length(temp) || n >= length(Ctemp)
+                    continue;
+                end
               	if temp(n+1)~=-1 && temp(n)~=-1
                     EvalCounter('add_partial', 1);
                     temp=[temp(1:n) -1 temp(n+1:end)];
