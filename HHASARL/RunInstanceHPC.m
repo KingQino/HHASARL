@@ -25,10 +25,20 @@ function RunInstanceHPC(arrayTaskId, numWorkers)
             'Set HHASARL_DRAW=0 when running parallel trials on HPC.');
     end
 
-    instanceNames = ListInstanceFiles(collectionDirectory);
-    if isempty(instanceNames)
-        error('RunInstanceHPC:NoInstancesFound', ...
-            'No .txt instances were found in %s.', collectionDirectory);
+    % -----------------------------
+    % Determine instance list
+    % -----------------------------
+    failedFile = getenv('HHASARL_FAILED_INSTANCES');
+    if ~isempty(failedFile) && isfile(failedFile)
+        fprintf('Rerun mode: reading failed instances from %s\n', failedFile);
+        instanceNames = readlines(failedFile);
+        instanceNames = strtrim(instanceNames); % remove whitespace/newlines
+    else
+        instanceNames = ListInstanceFiles(collectionDirectory);
+        if isempty(instanceNames)
+            error('RunInstanceHPC:NoInstancesFound', ...
+                'No .txt instances were found in %s.', collectionDirectory);
+        end
     end
 
     instanceIndex = arrayTaskId + 1;
