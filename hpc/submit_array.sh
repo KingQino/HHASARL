@@ -17,6 +17,8 @@ fi
 array_max=$((instance_count - 1))
 mkdir -p "$log_dir"
 
+export HHASARL_COLLECTION_DIR="${HHASARL_COLLECTION_DIR:-$collection_dir}"
+
 sbatch \
     --array="0-$array_max%8" \
     --job-name="$job_name" \

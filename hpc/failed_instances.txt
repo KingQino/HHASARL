@@ -1,0 +1,6 @@
+M-n126-k7-s5.txt
+M-n163-k12-s12.txt
+M-n212-k16-s12.txt
+F-n140-k5-s5.txt
+X-n819-k171.txt
+X-n916-k207.txt

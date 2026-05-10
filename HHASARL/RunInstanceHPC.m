@@ -1,5 +1,19 @@
-function RunInstanceHPC(arrayTaskId, numWorkers)
-    if nargin < 1 || isempty(arrayTaskId)
+function RunInstanceHPC(varargin)
+    if nargin > 2
+        warning('RunInstanceHPC:ExtraInputsIgnored', ...
+            'Ignoring %d extra input argument(s).', nargin - 2);
+    end
+
+    arrayTaskId = [];
+    numWorkers = [];
+    if nargin >= 1
+        arrayTaskId = ParseOptionalInteger(varargin{1}, 'arrayTaskId');
+    end
+    if nargin >= 2
+        numWorkers = ParseOptionalInteger(varargin{2}, 'numWorkers');
+    end
+
+    if isempty(arrayTaskId)
         arrayTaskId = ReadIntegerEnv('SLURM_ARRAY_TASK_ID', []);
     end
     if isempty(arrayTaskId)
@@ -8,7 +22,7 @@ function RunInstanceHPC(arrayTaskId, numWorkers)
             'for example RunInstanceHPC(0, 10).']);
     end
 
-    if nargin < 2 || isempty(numWorkers)
+    if isempty(numWorkers)
         numWorkers = ReadIntegerEnv('SLURM_CPUS_PER_TASK', 1);
     end
 
@@ -25,14 +39,14 @@ function RunInstanceHPC(arrayTaskId, numWorkers)
             'Set HHASARL_DRAW=0 when running parallel trials on HPC.');
     end
 
-    % -----------------------------
-    % Determine instance list
-    % -----------------------------
     failedFile = getenv('HHASARL_FAILED_INSTANCES');
-    if ~isempty(failedFile) && isfile(failedFile)
+    if ~isempty(failedFile)
+        if ~isfile(failedFile)
+            error('RunInstanceHPC:FailedInstanceFileNotFound', ...
+                'HHASARL_FAILED_INSTANCES points to a missing file: %s', failedFile);
+        end
         fprintf('Rerun mode: reading failed instances from %s\n', failedFile);
-        instanceNames = readlines(failedFile);
-        instanceNames = strtrim(instanceNames); % remove whitespace/newlines
+        instanceNames = ReadInstanceList(failedFile);
     else
         instanceNames = ListInstanceFiles(collectionDirectory);
         if isempty(instanceNames)
@@ -49,25 +63,43 @@ function RunInstanceHPC(arrayTaskId, numWorkers)
     end
 
     instanceFile = instanceNames{instanceIndex};
-    instancePath = fullfile(collectionDirectory, instanceFile);
-    fprintf('Task %d selected %s\n', arrayTaskId, instanceFile);
-    % ===== HPC parallel control =====
-    maxNumCompThreads(1);  % avoid implicit multithreading
-    
-    pool = gcp('nocreate');
-    if isempty(pool)
-        fprintf('Starting parallel pool with %d workers...\n', numWorkers);
-        parpool(numWorkers);
+    if isfile(instanceFile)
+        instancePath = instanceFile;
     else
-        if pool.NumWorkers ~= numWorkers
-            delete(pool);
-            fprintf('Restarting parallel pool with %d workers...\n', numWorkers);
-            parpool(numWorkers);
-        end
+        instancePath = fullfile(collectionDirectory, instanceFile);
     end
-    % =================================
+    fprintf('Task %d selected %s\n', arrayTaskId, instanceFile);
+
+    maxNumCompThreads(1);
     RunInstanceExperiment(instancePath, RL, printFlag, drawFlag, ...
         maxTrials, numWorkers, statsRoot, algorithmName);
+end
+
+
+function value = ParseOptionalInteger(rawValue, name)
+    if isempty(rawValue)
+        value = [];
+        return;
+    end
+
+    if isnumeric(rawValue)
+        value = round(rawValue);
+        return;
+    end
+
+    if isstring(rawValue) || ischar(rawValue)
+        value = str2double(rawValue);
+    else
+        error('RunInstanceHPC:InvalidOptionalInput', ...
+            '%s must be numeric or text containing a number.', name);
+    end
+
+    if isnan(value) || ~isfinite(value)
+        error('RunInstanceHPC:InvalidOptionalInput', ...
+            '%s must be numeric.', name);
+    end
+
+    value = round(value);
 end
 
 
@@ -95,4 +127,27 @@ function value = ReadStringEnv(name, defaultValue)
     else
         value = rawValue;
     end
+end
+
+
+function instanceNames = ReadInstanceList(filePath)
+    fileID = fopen(filePath, 'r');
+    if fileID == -1
+        error('RunInstanceHPC:FailedInstanceFileOpenError', ...
+            'Could not open failed instance list: %s', filePath);
+    end
+    cleaner = onCleanup(@() fclose(fileID));
+
+    rawNames = textscan(fileID, '%s', 'Delimiter', '\n', 'Whitespace', '');
+    instanceNames = rawNames{1};
+    instanceNames = strtrim(instanceNames);
+    instanceNames = instanceNames(~cellfun('isempty', instanceNames));
+    instanceNames = instanceNames(cellfun(@(x) ~strncmp(x, '#', 1), instanceNames));
+
+    if isempty(instanceNames)
+        error('RunInstanceHPC:EmptyFailedInstanceFile', ...
+            'No instance names were found in %s.', filePath);
+    end
+
+    clear cleaner;
 end

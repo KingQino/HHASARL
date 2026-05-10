@@ -5,8 +5,8 @@
 #SBATCH --time=48:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=4G
+#SBATCH --cpus-per-task=10
+#SBATCH --mem-per-cpu=5G
 
 set -euo pipefail
 
@@ -32,4 +32,4 @@ export HHASARL_RL="${HHASARL_RL:-2}"
 export HHASARL_PRINT="${HHASARL_PRINT:-0}"
 export HHASARL_DRAW="${HHASARL_DRAW:-0}"
 
-matlab -nodisplay -nosplash -nodesktop -batch "RunInstanceHPC"
+matlab -nodisplay -nosplash -nodesktop -batch "RunInstanceHPC()"
